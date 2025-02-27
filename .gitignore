@@ -1,0 +1,38 @@
+# Dependencias de Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Archivos de compilación y distribución
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Archivos temporales de Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Archivos de editores y herramientas comunes
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Archivos de entorno
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Otros archivos temporales o caché
+*.cache
+*.tmp
