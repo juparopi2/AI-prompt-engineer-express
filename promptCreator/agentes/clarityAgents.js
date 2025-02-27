@@ -26,7 +26,7 @@ const clarityResponseSchema = {
 // Ejemplo de implementación del agente de claridad que utiliza análisis
 async function clarityAgent(promptOptimization, metrics) {
   try {
-    const messages = [
+    let messages = [
       {
         role: "system",
         content: `            
@@ -43,16 +43,6 @@ async function clarityAgent(promptOptimization, metrics) {
         Paso 3: Proposición de alternativas simplificadas.
         - Ofrece sugerencias o alternativas de aplicación para cada término ambiguo o estructura compleja detectada.
         - Asegúrate de que las alternativas propuestas conserven el propósito original del texto.
-
-        Paso 4: Estructuración del resultado en formato JSON.
-        - Organiza el análisis siguiendo este esquema obligatorio: 
-        {
-          "issues": {
-            "ambiguities": string[],
-            "complexStructures": string[]
-          },
-          "suggestions": string[]
-        }
         - Llena las categorías del JSON con los datos obtenidos en los pasos anteriores.
 
         Asegúrate de completar cada paso antes de avanzar al siguiente y de realizar un análisis optimizado para su uso en el contexto de procesamiento de lenguaje natural (PLN).
@@ -68,7 +58,7 @@ async function clarityAgent(promptOptimization, metrics) {
         `,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +66,7 @@ async function clarityAgent(promptOptimization, metrics) {
       },
       body: JSON.stringify({
         messages: messages,
-        max_tokens: 600,
+        max_tokens: 1100,
         temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,
@@ -86,12 +76,66 @@ async function clarityAgent(promptOptimization, metrics) {
     });
 
     if (!response.ok) {
-      console.log("CLARITY AGENT : Error en la respuesta de OpenAI:", response);
+      console.log(
+        "CLARITY AGENT 0: Error en la respuesta de OpenAI:",
+        response
+      );
       return null;
     }
 
-    const data = await response.json();
-    const agentAns = data.choices[0].message.content;
+    let data = await response.json();
+    let agentAns = data.choices[0].message.content;
+
+    let newMessage = {
+      role: "assistant",
+      content: `${agentAns}`,
+    };
+
+    let newUserMessage = {
+      role: "user",
+      content: `{
+      Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+      ## Estructuración del resultado en formato JSON.
+        - Organiza el análisis siguiendo este esquema obligatorio en JSON Markdown: 
+        {
+          "issues": {
+            "ambiguities": string[],
+            "complexStructures": string[]
+          },
+          "suggestions": string[]
+        }
+          `,
+    };
+
+    messages = [...messages, newMessage, newUserMessage];
+
+    response = await fetch(process.env.GPT_4O_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.GPT_4O_KEY,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        max_tokens: 1100,
+        temperature: 0.7,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: null,
+      }),
+    });
+
+    if (!response.ok) {
+      console.log(
+        "CLARITY AGENT 0: Error en la respuesta de OpenAI:",
+        response
+      );
+      return null;
+    }
+
+    data = await response.json();
+    agentAns = data.choices[0].message.content;
 
     const parsedResponse = robustJSONParser(agentAns, clarityResponseSchema);
 
@@ -127,7 +171,7 @@ async function applyClaritySuggestions(
     return promptOptimization;
   }
   try {
-    const messages = [
+    let messages = [
       {
         role: "system",
         content: `Eres un especialista en lingüística computacional. Aplica las sugerencias de simplificación al prompt entregado por el usuario.
@@ -153,7 +197,6 @@ async function applyClaritySuggestions(
         5. **Generación de Respuesta Final:** Entregar el prompt optimizado en formato JSON y generar dudas si las hay.
 
         ## 4. Restricciones
-        - La salida debe estar estrictamente en formato JSON.
         - No debe incluir información redundante o irrelevante.
         - El contenido debe alinearse completamente con el propósito original.
         - Incluir todas las ideas relevantes organizadas lógicamente.
@@ -161,13 +204,7 @@ async function applyClaritySuggestions(
 
         ## 5. Flujo Lógico
         El flujo debe ser progresivo, desde el análisis del texto original hasta la entrega final optimizada, asegurando claridad y alineación con el objetivo.
-
-        ## 6. Formato de Salida Obligatorio
-          IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
-        {
-            "processedPrompt": string
-            "doubts": string[]
-        }`,
+        `,
       },
       {
         role: "user",
@@ -179,7 +216,7 @@ async function applyClaritySuggestions(
         `,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -187,7 +224,7 @@ async function applyClaritySuggestions(
       },
       body: JSON.stringify({
         messages: messages,
-        max_tokens: 600,
+        max_tokens: 1100,
         temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,
@@ -204,9 +241,59 @@ async function applyClaritySuggestions(
       return promptOptimization;
     }
 
-    const data = await response.json();
+    let data = await response.json();
 
-    const agentAns = data.choices[0].message.content;
+    let agentAns = data.choices[0].message.content;
+
+    const newMessages = [
+      {
+        role: "assistant",
+        content: agentAns,
+      },
+      {
+        role: "user",
+        content: `
+        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+        ## Estructuración del resultado en formato JSON.
+        IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
+
+        {
+            "processedPrompt": string
+            "doubts": string[]
+        }`,
+      },
+    ];
+
+    messages = [...messages, ...newMessages];
+
+    response = await fetch(process.env.GPT_4O_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.GPT_4O_KEY,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        max_tokens: 1100,
+        temperature: 0.7,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: null,
+      }),
+    });
+
+    if (!response.ok) {
+      console.log(
+        "APPLY CLARITY AGENT : Error en la respuesta de OpenAI:",
+        response
+      );
+      return promptOptimization;
+    }
+
+    data = await response.json();
+
+    agentAns = data.choices[0].message.content;
 
     const parsedResponse = robustJSONParser(agentAns, commonAgentSchema);
 

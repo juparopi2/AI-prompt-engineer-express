@@ -56,7 +56,7 @@ const getQuestions = async (userInput, aiAgent) => {
       },
       body: JSON.stringify({
         messages: messages,
-        max_tokens: 600,
+        max_tokens: 1100,
         temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,

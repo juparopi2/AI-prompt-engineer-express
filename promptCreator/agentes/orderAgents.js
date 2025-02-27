@@ -17,13 +17,9 @@ const orderAgentSchema = {
     estructura_secuencial: {
       type: "array",
       required: true,
-      items: {
-        type: "object",
-        properties: {
-          paso_nombre: { type: "string", required: true },
-          descripcion: { type: "string", required: true },
-          contenido_sugerido: { type: "string", required: true },
-        },
+      paso: {
+        type: "string",
+        required: true,
       },
     },
   },
@@ -32,7 +28,7 @@ const orderAgentSchema = {
 // Ejemplo de implementación del agente de claridad que utiliza análisis
 async function orderAgent(promptOptimization, metrics) {
   try {
-    const messages = [
+    let messages = [
       {
         role: "system",
         content: `# Agente de Análisis y Recomendación de Estructura por Pasos
@@ -46,7 +42,7 @@ async function orderAgent(promptOptimization, metrics) {
           1. Analizar la complejidad de la tarea solicitada
           2. Determinar si la tarea se beneficiaría de una estructura secuencial
           3. Recomendar el número óptimo de pasos o capítulos
-          4. Sugerir métodos para la generación secuencial (palabras clave, comandos, etc.)
+          4. Sugerir métodos para la generación secuencial (palabras clave, comandos, temas, etc.)
           5. Proporcionar justificación para tus recomendaciones
 
           ## Proceso de Análisis
@@ -86,27 +82,13 @@ async function orderAgent(promptOptimization, metrics) {
           - Adapta tus recomendaciones al nivel de experiencia del usuario
           - Sugiere métodos para verificar la finalización de cada paso antes de continuar
           - Recomienda incluir resúmenes al final de cada sección cuando sea apropiado
-          ## Formato de tus Recomendaciones
-  
-         ## Formato de Salida Obligatorio
-          IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
-          {
-            "require_cambio": boolean,
-            "justificacion": "string",
-            "numero_recomendado_de_pasos": number,
-            "mecanismo_de_generacion": {
-              "tipo": "string",
-              "palabra_clave": "string",
-              "instruccion_de_uso": "string"
-            },
-            "estructura_secuencial": [
-              {
-                "paso_nombre": "string",
-                "descripcion": "string",
-                "contenido_sugerido": "string"
-              }
-            ]
-          }
+
+          ## Formato de Respuesta
+            - Titulo
+            - Justificación 
+            - Número de pasos recomendado
+            - Estructura secuencial sugerida
+            - Mecanismo de generación secuencial
         `,
       },
       {
@@ -119,7 +101,7 @@ async function orderAgent(promptOptimization, metrics) {
           `,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +109,7 @@ async function orderAgent(promptOptimization, metrics) {
       },
       body: JSON.stringify({
         messages: messages,
-        max_tokens: 800,
+        max_tokens: 1100,
         temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,
@@ -141,8 +123,65 @@ async function orderAgent(promptOptimization, metrics) {
       return null;
     }
 
-    const data = await response.json();
-    const agentAns = data.choices[0].message.content;
+    let data = await response.json();
+    let agentAns = data.choices[0].message.content;
+
+    const newMessages = [
+      {
+        role: "assistant",
+        content: agentAns,
+      },
+      {
+        role: "user",
+        content: `
+        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+        ## Estructuración del resultado en formato JSON.
+        - Organiza el análisis siguiendo este esquema obligatorio en JSON Markdown: 
+          {
+            "require_cambio": boolean,
+            "justificacion": "string",
+            "numero_recomendado_de_pasos": number,
+            "mecanismo_de_generacion": {
+              "tipo": "string",
+              "palabra_clave": "string",
+              "instruccion_de_uso": "string"
+            },
+            "estructura_secuencial": [
+              {
+                "paso": "string"
+              }
+            ]
+          }
+        `,
+      },
+    ];
+
+    messages = [...messages, ...newMessages];
+
+    response = await fetch(process.env.GPT_4O_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.GPT_4O_KEY,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        max_tokens: 1100,
+        temperature: 0.7,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: null,
+      }),
+    });
+
+    if (!response.ok) {
+      console.log("ORDER AGENT : Error querying OpenAI:", response);
+      return null;
+    }
+
+    data = await response.json();
+    agentAns = data.choices[0].message.content;
 
     const parsedResponse = robustJSONParser(agentAns, orderAgentSchema);
 
@@ -170,14 +209,14 @@ async function applyOrderSuggestions(
     return promptOptimization;
   }
   try {
-    const messages = [
+    let messages = [
       {
         role: "system",
         content: `
         # Agente Implementador de Estructura Secuencial
 
         ## Objetivo Principal
-        Tu función es implementar las recomendaciones de estructura proporcionadas por el Agente de Análisis y transformar el prompt original del usuario en un prompt estructurado y optimizado. Debes interpretar correctamente el formato JSON recibido y aplicar las recomendaciones de manera efectiva.
+        Tu función es implementar las recomendaciones de estructura proporcionadas por el Agente de Análisis y transformar el prompt original del usuario en un prompt estructurado y optimizado. Debes interpretar correctamente el formato JSON recibido y aplicar las recomendaciones de manera efectiva. No debes alterar la intención original del usuario ni agregar información que no se haya entregado previamente. La idea es que el prompt resultante sea capaz de solicitar al usuario la isntruccion de uso del mecanismo de generación para generar la secuencia en diferentes solicitudes.
 
         ## Tus Responsabilidades
 
@@ -185,8 +224,9 @@ async function applyOrderSuggestions(
         2. Analizar el prompt original del usuario
         3. Implementar la estructura recomendada cuando sea necesario
         4. Incorporar los mecanismos de generación secuencial sugeridos
-        5. Mantener la intención y requisitos originales del usuario
-        6. Entregar un prompt final optimizado y estructurado
+        5. Mantener la intención y requisitos originales del usuario sin agregar información adicional
+        6. Omite la generaciónd de ejemplos.
+        7. Entregar un prompt final optimizado y estructurado
 
         ## Proceso de Implementación
 
@@ -200,20 +240,11 @@ async function applyOrderSuggestions(
 
         3. **Estructuración del prompt**:
           - Si 'requiere_estructura_secuencial' es true:
-            - Implementa la estructura por pasos o capítulos recomendada
-            - Incluye los mecanismos de generación secuencial
+            - Añade al prompt los pasos a generar secuencialmente. Usa la estructura secuencial para afinar los pasos
+            - Incorpora al final del prompt una instrucción de avance al final de cada paso. Usa la instrucción de uso del mecanismo de generación. 
           - Si 'requiere_estructura_secuencial' es false:
             - Optimiza el prompt como una unidad cohesiva
             - Incorpora las recomendaciones de estructura interna no secuencial
-
-        ## Formato de Salida Obligatorio
-
-        Formato de Salida Obligatorio
-          IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
-         {
-            "processedPrompt": string
-            "doubts": string[]
-        }
         `,
       },
       {
@@ -226,7 +257,7 @@ async function applyOrderSuggestions(
           `,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -234,7 +265,7 @@ async function applyOrderSuggestions(
       },
       body: JSON.stringify({
         messages: messages,
-        max_tokens: 600,
+        max_tokens: 1500,
         temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,
@@ -248,9 +279,57 @@ async function applyOrderSuggestions(
       return promptOptimization;
     }
 
-    const data = await response.json();
+    let data = await response.json();
 
-    const agentAns = data.choices[0].message.content;
+    let agentAns = data.choices[0].message.content;
+
+    const newMessages = [
+      {
+        role: "assistant",
+        content: agentAns,
+      },
+      {
+        role: "user",
+        content: `
+        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+        ## Estructuración del resultado en formato JSON.
+        IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
+
+         {
+            "processedPrompt": string
+            "doubts": string[]
+        }
+        `,
+      },
+    ];
+
+    messages = [...messages, ...newMessages];
+
+    response = await fetch(process.env.GPT_4O_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.GPT_4O_KEY,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        max_tokens: 1100,
+        temperature: 0.7,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: null,
+      }),
+    });
+
+    if (!response.ok) {
+      console.log("APPLY ORDER AGENT : Error querying OpenAI:", response);
+      return promptOptimization;
+    }
+
+    data = await response.json();
+
+    agentAns = data.choices[0].message.content;
 
     const parsedResponse = robustJSONParser(agentAns, commonAgentSchema);
 
