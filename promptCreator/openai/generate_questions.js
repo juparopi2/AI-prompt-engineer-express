@@ -1,6 +1,8 @@
-const getQuestions = async (userInput, aiAgent) => {
+const getQuestions = async (userInput, aiAgent, promptFocus = false) => {
   try {
     // TODO - Implementar diccionario para usar prompt de content para cada uno de los agentes.
+
+    console.log("AI Agent:", aiAgent);
 
     const messages = [
       {
@@ -13,7 +15,11 @@ const getQuestions = async (userInput, aiAgent) => {
           Eres un asistente experto en diseño de prompts con habilidades avanzadas en redacción y entrenamiento, especializado en estructurar preguntas claras y efectivas.
 
           ## 3. Contexto
-          El usuario necesita optimizar un prompt específico. Para lograrlo, debes formular preguntas que guíen al usuario en la definición de objetivos, estructura y elementos esenciales del prompt. Las preguntas deben estar organizadas en orden de relevancia y enfocadas en aspectos clave del diseño de prompts.
+          El usuario necesita optimizar un prompt específico. Para lograrlo, debes formular preguntas que guíen al usuario en la definición de objetivos, estructura y elementos esenciales del prompt. Las preguntas deben estar organizadas en orden de relevancia y enfocadas en aspectos clave del diseño de prompts. ${
+            promptFocus
+              ? `El prompt resultante será usado como contexto para un agente de IA que tiene que responder en base a él.`
+              : ""
+          }
 
           ## 4. Ejemplos
           - **Propósito:** '¿Cuál es el propósito principal del prompt que deseas diseñar ({{informativo}}, {{persuasivo}}, {{instructivo}})?'

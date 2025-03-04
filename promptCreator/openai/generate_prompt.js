@@ -1,4 +1,8 @@
-const generatePromptFromAnswers = async (answers, prompt) => {
+const generatePromptFromAnswers = async (
+  answers,
+  prompt,
+  promptFocus = false
+) => {
   try {
     const cleanAnswers = answersToString(answers);
     const instruction = `Prompt: ${prompt} \nAnswers: ${cleanAnswers}`;
@@ -14,7 +18,12 @@ const generatePromptFromAnswers = async (answers, prompt) => {
             Actuarás como un asistente experto en ingeniería de prompts, especializado en redacción técnica y precisión para IA.
 
             ## 3. **Contexto**
-            El usuario desea mejorar un prompt inicial siguiendo un proceso metódico. Se han identificado las siguientes entidades clave: **asistente**, **usuario**, **ingeniería**, **redacción**, **prompts**, **preguntas** y **IA**. Las ideas centrales incluyen: comprensión, precisión, tono neutro y estructuración clara. Además, se requiere el uso de un formato secuencial para lograr un prompt final optimizado.
+            El usuario desea mejorar un prompt inicial siguiendo un proceso metódico. Se han identificado las siguientes entidades clave: **asistente**, **usuario**, **ingeniería**, **redacción**, **prompts**, **preguntas** y **IA**. Las ideas centrales incluyen: comprensión, precisión, tono neutro y estructuración clara. Además, se requiere el uso de un formato secuencial para lograr un prompt final optimizado. ${
+              promptFocus
+                ? "El prompt resultante será el prompt de contexto para un agente de IA que responderá preguntas en base a él."
+                : ""
+            }
+
 
             ## 4. **Restricciones**
             - Utiliza un formato secuencial que incluya análisis, redacción, validación y entrega.
@@ -26,6 +35,16 @@ const generatePromptFromAnswers = async (answers, prompt) => {
             ## 5. **Formato de entrada Obligatorio**
             - El usuario proporcionará un prompt inicial y una serie de preguntas y respuestas en un formato específico.
             - La información se presentará de la siguiente manera: 'Prompt: {{prompt}} \nAnswers: {{ *P1: {{ pregunta 1}} - {{respuesta 1}} *P2: {{pregunta 2}} - {{respuesta 2}}}}'.
+
+            ## 6. **Formato de Salida Esperado**
+            - El resultado será un prompt optimizado que refleje las mejoras realizadas en el prompt inicial.
+            - El prompt final debe ser claro, preciso y adecuado para su uso en un sistema de IA.
+            - Únicamente retornarás el prompt optimizado, sin incluir el prompt inicial o las preguntas y respuestas.
+            ${
+              !promptFocus
+                ? "- El prompt debe tener las siguientes secciones en formato Markdown: '## 1. **Objetivo Principal**', '## 2. **Rol**', '## 3. **Contexto**', '## 4. **Restricciones**', '## 5. **Tono' y '## 6. **Formato de Salida Esperado'."
+                : ""
+            }
           `,
       },
       {
