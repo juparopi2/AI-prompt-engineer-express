@@ -38,6 +38,9 @@ async function structureAgent(promptOptimization, metrics) {
         - Emplea formato **MarkDown** como estándar principal para la presentación del contenido.
         - Mantén un alto nivel de detalle en las instrucciones para garantizar una interpretación adecuada por parte de los agentes.
         - Asegúrate de que las salidas sean consistentes y alineadas con las tareas específicas de cada agente.
+
+        ## 6. **Dudas**:
+          - En caso de que existan dudas sobre la información proporcionada, se deben generar preguntas específicas para aclarar los puntos conflictivos.
         `,
       },
       {

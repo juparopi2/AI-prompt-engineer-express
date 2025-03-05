@@ -31,7 +31,8 @@ async function contextAgent(promptOptimization, metrics) {
     let messages = [
       {
         role: "system",
-        content: `Eres un investigador experto en expansión contextual y un especialista en lingüística computacional. Para el prompt proporcionado sigue las siguientes intrucciones en pro de la claridad y el enriquecimiento contextual de un prompt:
+        content: `
+        Eres un investigador experto en expansión contextual y un especialista en lingüística computacional. Para el prompt proporcionado sigue las siguientes intrucciones en pro de la claridad y el enriquecimiento contextual de un prompt:
         1. Identifica áreas clave que requieren contexto adicional basándote en las entidades detectadas.
         2. Añade temáticas de ejemplos que pueden ayudar a ilustrar el contexto del prompt.
 
@@ -173,6 +174,8 @@ async function integrateContext(
             Utiliza una escala de 1 a 5 para medir la claridad y fluidez del texto final.
 
           5. **Integración de mejoras**: Realiza los cambios necesarios de forma fluida y asegúrate de que el resultado sea coherente con el propósito original del prompt, manteniendo un lenguaje claro y alineado con las expectativas de la audiencia objetivo.
+
+          6. **Dudas**: En caso de que existan dudas sobre la información proporcionada, se deben generar preguntas específicas para aclarar los puntos conflictivos.
   `,
       },
       {

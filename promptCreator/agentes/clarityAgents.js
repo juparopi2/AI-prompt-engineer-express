@@ -174,12 +174,7 @@ async function applyClaritySuggestions(
     let messages = [
       {
         role: "system",
-        content: `Eres un especialista en lingüística computacional. Aplica las sugerencias de simplificación al prompt entregado por el usuario.
-        En caso de que no haya sugerencias, no realices cambios.
-        Si tienes dudas, puedes preguntar al usuario por la información que no puedas resolver por tu cuenta.
-        Si no tienes dudas, puedes enviar una lista vacía.
-
-
+        content: `
         ## 1. Objetivo Principal
         Optimizar un prompt original para que sea claro, conciso, exhaustivo y alineado al propósito inicial, garantizando su utilidad para la audiencia objetivo especialmente la claridad del prompt.
 
@@ -204,6 +199,9 @@ async function applyClaritySuggestions(
 
         ## 5. Flujo Lógico
         El flujo debe ser progresivo, desde el análisis del texto original hasta la entrega final optimizada, asegurando claridad y alineación con el objetivo.
+
+        ## 6. Dudas
+        En caso de que existan dudas sobre la información proporcionada, se deben generar preguntas específicas para aclarar los puntos conflictivos.
         `,
       },
       {
@@ -308,6 +306,10 @@ async function applyClaritySuggestions(
       );
       return promptOptimization;
     }
+
+    console.log("Parsed Response:", parsedResponse);
+    console.log("Parsed parsed Response:", parsedResponse.parsed);
+    console.log("Parsed parsed DOUBTS Response:", parsedResponse.parsed.doubts);
 
     promptOptimization.processedPrompt = parsedResponse.parsed.processedPrompt;
     promptOptimization.doubts = [

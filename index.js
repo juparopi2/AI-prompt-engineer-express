@@ -188,6 +188,7 @@ app.post(
       //   res.json({ response });
       // }
 
+      console.log("Doubts:", optimizedPromptStructure.doubts);
       return res.json({
         response: optimizedPromptStructure.processedPrompt,
         doubts: optimizedPromptStructure.doubts,

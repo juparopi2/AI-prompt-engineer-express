@@ -245,6 +245,8 @@ async function applyOrderSuggestions(
           - Si 'requiere_estructura_secuencial' es false:
             - Optimiza el prompt como una unidad cohesiva
             - Incorpora las recomendaciones de estructura interna no secuencial
+        4. **Dudas**: 
+          - En caso de que existan dudas sobre la información proporcionada, se deben generar preguntas específicas para aclarar los puntos conflictivos.
         `,
       },
       {
