@@ -2,8 +2,6 @@ const getQuestions = async (userInput, aiAgent, promptFocus = false) => {
   try {
     // TODO - Implementar diccionario para usar prompt de content para cada uno de los agentes.
 
-    console.log("AI Agent:", aiAgent);
-
     const messages = [
       {
         role: "system",

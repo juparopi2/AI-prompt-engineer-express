@@ -67,8 +67,6 @@ const optimizePromptWithAgents = async (prompt, metrics) => {
     doubts: [],
   };
 
-  console.log("Doubts 0:", promptOptimization.doubts);
-
   // Agente de Claridad: analiza ambigüedades y propone sugerencias
   const clarityResults = await clarityAgent(promptOptimization, metrics);
   promptOptimization = await applyClaritySuggestions(
@@ -77,8 +75,6 @@ const optimizePromptWithAgents = async (prompt, metrics) => {
     commonAgentSchema
   );
 
-  console.log("Doubts 1:", promptOptimization.doubts);
-
   // Agente de Enriquecimiento Contextual: integra información complementaria
   const contextResults = await contextAgent(promptOptimization, metrics);
   promptOptimization = await integrateContext(
@@ -86,8 +82,6 @@ const optimizePromptWithAgents = async (prompt, metrics) => {
     contextResults,
     commonAgentSchema
   );
-
-  console.log("Doubts 2:", promptOptimization.doubts);
 
   // Agente de generación de pasos: divide el prompt en pasos para que sea iterativo
 
@@ -98,12 +92,8 @@ const optimizePromptWithAgents = async (prompt, metrics) => {
     commonAgentSchema
   );
 
-  console.log("Doubts 3:", promptOptimization.doubts);
-
   // Agente de Optimización Estructural: reorganiza la estructura del prompt
   promptOptimization = await structureAgent(promptOptimization, metrics);
-
-  console.log("Doubts 4:", promptOptimization.doubts);
 
   return promptOptimization;
 };

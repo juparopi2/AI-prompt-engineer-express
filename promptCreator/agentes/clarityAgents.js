@@ -307,10 +307,6 @@ async function applyClaritySuggestions(
       return promptOptimization;
     }
 
-    console.log("Parsed Response:", parsedResponse);
-    console.log("Parsed parsed Response:", parsedResponse.parsed);
-    console.log("Parsed parsed DOUBTS Response:", parsedResponse.parsed.doubts);
-
     promptOptimization.processedPrompt = parsedResponse.parsed.processedPrompt;
     promptOptimization.doubts = [
       ...promptOptimization.doubts,
