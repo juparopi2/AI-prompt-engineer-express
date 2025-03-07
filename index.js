@@ -12,7 +12,7 @@ const {
   optimizePromptWithAgents,
 } = require("./promptCreator/sistema_multiagente/optimize-prompt");
 
-const { authMiddleware } = require("./auth/auth_middleware");
+//const { authMiddleware } = require("./auth/auth_middleware");
 
 // TODO Cambiar este llamado para que funcione en producción
 require("dotenv").config({ path: ".env.local" });
@@ -31,7 +31,7 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(express.json());
-app.use(authMiddleware);
+//app.use(authMiddleware);
 
 // Rutas de ejemplo
 app.get("/", (req, res) => {
