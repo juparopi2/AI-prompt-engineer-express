@@ -12,6 +12,8 @@ const {
   optimizePromptWithAgents,
 } = require("./promptCreator/sistema_multiagente/optimize-prompt");
 
+const { save_prompt } = require("./supabase/prompts_crud");
+
 //const { authMiddleware } = require("./auth/auth_middleware");
 
 // TODO Cambiar este llamado para que funcione en producción
@@ -80,7 +82,7 @@ app.post("/prompt-creator/get-custom-questions", async (req, res) => {
  */
 app.post("/prompt-creator/process-questions", async (req, res) => {
   try {
-    const { answers, prompt } = req.body;
+    const { answers, prompt, userId } = req.body;
 
     if (!answers || !Array.isArray(answers)) {
       return res.status(400).json({
@@ -94,10 +96,20 @@ app.post("/prompt-creator/process-questions", async (req, res) => {
       });
     }
 
+    if (!userId || typeof userId !== "string" || typeof userId !== "number") {
+      return res.status(400).json({
+        error: "User id is required and must be a string or number",
+      });
+    }
+
     const response = await generatePromptFromAnswers(answers, prompt);
+
+    const data = await save_prompt(response, userId, "Creator");
+    const id = data[0].id;
 
     return res.json({
       response: response,
+      id: id,
     });
   } catch (error) {
     console.error("Process questions endpoint error:", error);
@@ -147,7 +159,7 @@ app.post("/prompt-generator/get-custom-questions", async (req, res) => {
  */
 app.post("/prompt-generator/process-questions", async (req, res) => {
   try {
-    const { answers, prompt } = req.body;
+    const { answers, prompt, userId } = req.body;
 
     if (!answers || !Array.isArray(answers)) {
       return res.status(400).json({
@@ -158,6 +170,12 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({
         error: "Prompt is required and must be a string",
+      });
+    }
+
+    if (!userId || typeof userId !== "string" || typeof userId !== "number") {
+      return res.status(400).json({
+        error: "User id is required and must be a string or number",
       });
     }
 
@@ -179,9 +197,17 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
     //   res.json({ response });
     // }
 
+    const data = await save_prompt(
+      optimizedPromptStructure.processedPrompt,
+      userId,
+      "Generator"
+    );
+    const id = data[0].id;
+
     return res.json({
       response: optimizedPromptStructure.processedPrompt,
       doubts: optimizedPromptStructure.doubts,
+      id: id,
     });
   } catch (error) {
     console.error("Process questions endpoint error:", error);
