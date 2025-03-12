@@ -1,4 +1,5 @@
 const { robustJSONParser } = require("../../verificador-json");
+const { postImplementation } = require("../../openAICommon/postImplementation");
 
 const orderAgentSchema = {
   type: "object",
@@ -101,32 +102,19 @@ async function orderAgent(promptOptimization, metrics) {
           `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_2_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
+    let agentAns = postImplementation(
+      process.env.GPT_4O_2_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "ORDER AGENT 0"
+    );
 
-    if (!response.ok) {
-      console.log("ORDER AGENT : Error querying OpenAI:", response);
-      return null;
-    }
-
-    let data = await response.json();
-    let agentAns = data.choices[0].message.content;
-
-    const newMessages = [
+    let newMessages = [
       {
         role: "assistant",
         content: agentAns,
@@ -158,30 +146,17 @@ async function orderAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_2_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log("ORDER AGENT : Error querying OpenAI:", response);
-      return null;
-    }
-
-    data = await response.json();
-    agentAns = data.choices[0].message.content;
+    agentAns = postImplementation(
+      process.env.GPT_4O_2_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "ORDER AGENT 1"
+    );
 
     const parsedResponse = robustJSONParser(agentAns, orderAgentSchema);
 
@@ -259,33 +234,19 @@ async function applyOrderSuggestions(
           `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_2_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1500,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
+    let agentAns = postImplementation(
+      process.env.GPT_4O_2_URL,
+      messages,
+      1500,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "APPLY ORDER AGENT 0"
+    );
 
-    if (!response.ok) {
-      console.log("APPLY ORDER AGENT : Error querying OpenAI:", response);
-      return promptOptimization;
-    }
-
-    let data = await response.json();
-
-    let agentAns = data.choices[0].message.content;
-
-    const newMessages = [
+    let newMessages = [
       {
         role: "assistant",
         content: agentAns,
@@ -308,31 +269,17 @@ async function applyOrderSuggestions(
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_2_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log("APPLY ORDER AGENT : Error querying OpenAI:", response);
-      return promptOptimization;
-    }
-
-    data = await response.json();
-
-    agentAns = data.choices[0].message.content;
+    agentAns = postImplementation(
+      process.env.GPT_4O_2_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "APPLY ORDER AGENT 1"
+    );
 
     const parsedResponse = robustJSONParser(agentAns, commonAgentSchema);
 

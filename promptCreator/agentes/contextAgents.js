@@ -1,4 +1,5 @@
 const { robustJSONParser } = require("../../verificador-json");
+const { postImplementation } = require("../../openAICommon/postImplementation");
 
 const contextResponseSchema = {
   type: "object",
@@ -51,31 +52,18 @@ async function contextAgent(promptOptimization, metrics) {
           `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
 
-    if (!response.ok) {
-      console.log("CONTEXT AGENT : Error en la respuesta de OpenAI");
-      return null;
-    }
-
-    let data = await response.json();
-    let agentAns = data.choices[0].message.content;
-
+    let agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "CONTEXT AGENT 0"
+    );
     let newMessages = [
       {
         role: "assistant",
@@ -103,33 +91,17 @@ async function contextAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log("CONTEXT AGENT : Error en la respuesta de OpenAI");
-      return null;
-    }
-
-    data = await response.json();
-    agentAns = data.choices[0].message.content;
-
-    const rta = robustJSONParser(agentAns, contextResponseSchema);
-    return rta;
+    agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "CONTEXT AGENT 1"
+    );
   } catch (error) {
     console.error("Error querying OpenAI:", error);
     throw error;
@@ -189,31 +161,18 @@ async function integrateContext(
         `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
 
-    if (!response.ok) {
-      console.log("INTEGRATE CONTEXT AGENT : Error en la respuesta de OpenAI");
-      return promptOptimization;
-    }
-
-    let data = await response.json();
-
-    let agentAns = data.choices[0].message.content;
+    let agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "INTEGRATE CONTEXT AGENT 0"
+    );
 
     let newMessages = [
       {
@@ -237,31 +196,17 @@ async function integrateContext(
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log("INTEGRATE CONTEXT AGENT : Error en la respuesta de OpenAI");
-      return promptOptimization;
-    }
-
-    data = await response.json();
-
-    agentAns = data.choices[0].message.content;
+    agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "INTEGRATE CONTEXT AGENT 1"
+    );
 
     const parsedResponse = robustJSONParser(agentAns, commonAgentSchema);
 

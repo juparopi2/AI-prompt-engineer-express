@@ -1,5 +1,5 @@
 const { robustJSONParser } = require("../../verificador-json");
-
+const { postImplementation } = require("../../openAICommon/postImplementation");
 const clarityResponseSchema = {
   type: "object",
   properties: {
@@ -58,33 +58,18 @@ async function clarityAgent(promptOptimization, metrics) {
         `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
 
-    if (!response.ok) {
-      console.log(
-        "CLARITY AGENT 0: Error en la respuesta de OpenAI:",
-        response
-      );
-      return null;
-    }
-
-    let data = await response.json();
-    let agentAns = data.choices[0].message.content;
+    let agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "CLARITY AGENT 0"
+    );
 
     let newMessage = {
       role: "assistant",
@@ -109,33 +94,17 @@ async function clarityAgent(promptOptimization, metrics) {
 
     messages = [...messages, newMessage, newUserMessage];
 
-    response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log(
-        "CLARITY AGENT 0: Error en la respuesta de OpenAI:",
-        response
-      );
-      return null;
-    }
-
-    data = await response.json();
-    agentAns = data.choices[0].message.content;
+    agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "CLARITY AGENT 1"
+    );
 
     const parsedResponse = robustJSONParser(agentAns, clarityResponseSchema);
 
@@ -214,34 +183,18 @@ async function applyClaritySuggestions(
         `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
 
-    if (!response.ok) {
-      console.log(
-        "APPLY CLARITY AGENT : Error en la respuesta de OpenAI:",
-        response
-      );
-      return promptOptimization;
-    }
-
-    let data = await response.json();
-
-    let agentAns = data.choices[0].message.content;
+    let agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "APPLY CLARITY AGENT 0"
+    );
 
     const newMessages = [
       {
@@ -265,34 +218,17 @@ async function applyClaritySuggestions(
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log(
-        "APPLY CLARITY AGENT : Error en la respuesta de OpenAI:",
-        response
-      );
-      return promptOptimization;
-    }
-
-    data = await response.json();
-
-    agentAns = data.choices[0].message.content;
+    agentAns = postImplementation(
+      process.env.GPT_4O_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "APPLY CLARITY AGENT 1"
+    );
 
     const parsedResponse = robustJSONParser(agentAns, commonAgentSchema);
 
