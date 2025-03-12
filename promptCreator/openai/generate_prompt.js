@@ -65,11 +65,7 @@ const generatePromptFromAnswers = async (
       null,
       "GENERATE PROMPT FROM ANSWERS"
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
+    
     return response;
   } catch (error) {
     console.error("Error querying OpenAI:", error);
