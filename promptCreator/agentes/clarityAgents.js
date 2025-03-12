@@ -59,7 +59,8 @@ async function clarityAgent(promptOptimization, metrics) {
       },
     ];
 
-    let agentAns = postImplementation(
+    console.log("CLARITY AGENT 0 Log :::::::::::: ", process.env.GPT_4O_URL);
+    let agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -70,6 +71,7 @@ async function clarityAgent(promptOptimization, metrics) {
       null,
       "CLARITY AGENT 0"
     );
+    console.log("CLARITY AGENT 1 Log :::::::::::: ", agentAns);
 
     let newMessage = {
       role: "assistant",
@@ -94,7 +96,7 @@ async function clarityAgent(promptOptimization, metrics) {
 
     messages = [...messages, newMessage, newUserMessage];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -184,7 +186,7 @@ async function applyClaritySuggestions(
       },
     ];
 
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -218,7 +220,7 @@ async function applyClaritySuggestions(
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,

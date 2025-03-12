@@ -53,7 +53,7 @@ async function contextAgent(promptOptimization, metrics) {
       },
     ];
 
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -91,7 +91,7 @@ async function contextAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -162,7 +162,7 @@ async function integrateContext(
       },
     ];
 
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,
@@ -196,7 +196,7 @@ async function integrateContext(
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_URL,
       messages,
       1100,

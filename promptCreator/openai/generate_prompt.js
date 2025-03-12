@@ -1,3 +1,5 @@
+const { postImplementation } = require("../../openAICommon/postImplementation");
+
 const generatePromptFromAnswers = async (
   answers,
   prompt,
@@ -52,30 +54,23 @@ const generatePromptFromAnswers = async (
         content: instruction,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_2_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.GPT_PRIVATE_KEY,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        max_tokens: 1100,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      }),
-    });
+    const response = await postImplementation(
+      process.env.GPT_4O_2_URL,
+      messages,
+      1100,
+      0.7,
+      0.95,
+      0,
+      0,
+      null,
+      "GENERATE PROMPT FROM ANSWERS"
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-
-    return data.choices[0].message.content;
+    return response;
   } catch (error) {
     console.error("Error querying OpenAI:", error);
     throw error;

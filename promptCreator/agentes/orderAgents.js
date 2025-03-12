@@ -102,7 +102,7 @@ async function orderAgent(promptOptimization, metrics) {
           `,
       },
     ];
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1100,
@@ -146,7 +146,7 @@ async function orderAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1100,
@@ -234,7 +234,7 @@ async function applyOrderSuggestions(
           `,
       },
     ];
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1500,
@@ -269,7 +269,7 @@ async function applyOrderSuggestions(
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1100,

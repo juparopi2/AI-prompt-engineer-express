@@ -54,7 +54,7 @@ async function structureAgent(promptOptimization, metrics) {
             `,
       },
     ];
-    let agentAns = postImplementation(
+    let agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1100,
@@ -87,7 +87,7 @@ async function structureAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    agentAns = postImplementation(
+    agentAns = await postImplementation(
       process.env.GPT_4O_2_URL,
       messages,
       1100,
