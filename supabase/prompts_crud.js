@@ -1,9 +1,9 @@
 const { supabase } = require("./supabase_client");
 
-const save_prompt = async (prompt, user_id, type) => {
+const save_prompt = async (prompt, user_id, title, type) => {
   const { data, error } = await supabase
     .from("prompt")
-    .insert({ content: prompt, user_id: user_id, type: type })
+    .insert({ content: prompt, user_id: user_id, type: type, title: title })
     .select();
 
   if (error) {

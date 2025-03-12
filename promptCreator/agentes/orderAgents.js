@@ -101,11 +101,11 @@ async function orderAgent(promptOptimization, metrics) {
           `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -158,11 +158,11 @@ async function orderAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
+    response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -259,11 +259,11 @@ async function applyOrderSuggestions(
           `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -293,7 +293,8 @@ async function applyOrderSuggestions(
       {
         role: "user",
         content: `
-        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON. 
+        Debes generar un prompt optimizado enfocandote en la estructura y en las recomendaciones de tu mensaje anterior, ademas de una lista de dudas si las hay. 
         ## Estructuración del resultado en formato JSON.
         IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
 
@@ -307,11 +308,11 @@ async function applyOrderSuggestions(
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
+    response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,

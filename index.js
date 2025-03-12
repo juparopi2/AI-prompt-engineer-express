@@ -4,6 +4,8 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 
 const { getQuestions } = require("./promptCreator/openai/generate_questions");
+const { generateTitle } = require("./promptCreator/openai/give_title");
+
 const {
   generatePromptFromAnswers,
 } = require("./promptCreator/openai/generate_prompt");
@@ -11,6 +13,8 @@ const {
   analyzePromptWithAzureCS,
   optimizePromptWithAgents,
 } = require("./promptCreator/sistema_multiagente/optimize-prompt");
+
+const { update_prompt } = require("./supabase/prompts_crud");
 
 const { save_prompt } = require("./supabase/prompts_crud");
 
@@ -96,20 +100,22 @@ app.post("/prompt-creator/process-questions", async (req, res) => {
       });
     }
 
-    if (!userId || typeof userId !== "string" || typeof userId !== "number") {
+    if (!userId || typeof userId !== "string") {
       return res.status(400).json({
-        error: "User id is required and must be a string or number",
+        error: "User id is required and must be a string",
       });
     }
 
     const response = await generatePromptFromAnswers(answers, prompt);
 
-    const data = await save_prompt(response, userId, "Creator");
+    const title = await generateTitle(response);
+    const data = await save_prompt(response, userId, title, "Creator");
     const id = data[0].id;
 
     return res.json({
       response: response,
       id: id,
+      title: title,
     });
   } catch (error) {
     console.error("Process questions endpoint error:", error);
@@ -173,9 +179,9 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
       });
     }
 
-    if (!userId || typeof userId !== "string" || typeof userId !== "number") {
+    if (!userId || typeof userId !== "string") {
       return res.status(400).json({
-        error: "User id is required and must be a string or number",
+        error: "User id is required and must be a string",
       });
     }
 
@@ -197,9 +203,12 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
     //   res.json({ response });
     // }
 
+    const title = await generateTitle(optimizedPromptStructure.processedPrompt);
+
     const data = await save_prompt(
       optimizedPromptStructure.processedPrompt,
       userId,
+      title,
       "Generator"
     );
     const id = data[0].id;
@@ -208,9 +217,43 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
       response: optimizedPromptStructure.processedPrompt,
       doubts: optimizedPromptStructure.doubts,
       id: id,
+      title: title,
     });
   } catch (error) {
     console.error("Process questions endpoint error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * -------------------------------------------------
+ * -------------- MANEJO DE PROMPTS --------------
+ * -------------------------------------------------
+ */
+
+app.post("/post-management/update-prompt", async (req, res) => {
+  try {
+    const { promptId, updates } = req.body;
+
+    if (!promptId || typeof promptId !== "string") {
+      return res.status(400).json({
+        error: "Prompt ID is required and must be a string",
+      });
+    }
+
+    if (!updates || typeof updates !== "object") {
+      return res.status(400).json({
+        error: "Updates object is required",
+      });
+    }
+
+    const data = await update_prompt(promptId, updates);
+
+    return res.json({ data });
+  } catch (error) {
+    console.error("Update prompt endpoint error:", error);
     res.status(500).json({
       error: "Internal server error",
     });

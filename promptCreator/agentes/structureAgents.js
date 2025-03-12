@@ -53,11 +53,11 @@ async function structureAgent(promptOptimization, metrics) {
             `,
       },
     ];
-    let response = await fetch(process.env.GPT_4O_URL, {
+    let response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -99,11 +99,11 @@ async function structureAgent(promptOptimization, metrics) {
 
     messages = [...messages, ...newMessages];
 
-    response = await fetch(process.env.GPT_4O_URL, {
+    response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,

@@ -55,7 +55,7 @@ async function contextAgent(promptOptimization, metrics) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -107,7 +107,7 @@ async function contextAgent(promptOptimization, metrics) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -193,7 +193,7 @@ async function integrateContext(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
@@ -223,7 +223,8 @@ async function integrateContext(
       {
         role: "user",
         content: `
-        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON
+        Ahora genera la respuesta usando la información de tu mensaje anterior para llenar el siguiente JSON. 
+        Debes generar un prompt optimizado enfocandote en el contexto y en las recomendaciones de tu mensaje anterior, ademas de una lista de dudas si las hay. 
         ## Estructuración del resultado en formato JSON.
         IMPORTANTE: Tu respuesta SIEMPRE debe seguir exactamente este formato JSON, sin excepciones en markdown:
 
@@ -240,7 +241,7 @@ async function integrateContext(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,

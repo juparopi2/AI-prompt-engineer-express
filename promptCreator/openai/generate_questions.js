@@ -52,11 +52,11 @@ const getQuestions = async (userInput, aiAgent, promptFocus = false) => {
         content: `Mi prompt a mejorar es: "${userInput}"`,
       },
     ];
-    const response = await fetch(process.env.GPT_4O_URL, {
+    const response = await fetch(process.env.GPT_4O_2_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": process.env.GPT_4O_KEY,
+        "api-key": process.env.GPT_PRIVATE_KEY,
       },
       body: JSON.stringify({
         messages: messages,
