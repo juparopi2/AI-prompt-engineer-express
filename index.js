@@ -268,7 +268,10 @@ app.post("/post-management/get-prompts", async (req, res) => {
 
     const data = await get_prompts(userId);
 
-    return res.json({ ...data, success: true });
+    return res.json({
+      success: true,
+      ...data,
+    });
   } catch (error) {
     console.error("Get prompts endpoint error:", error);
     res.status(500).json({
