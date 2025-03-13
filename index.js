@@ -14,9 +14,11 @@ const {
   optimizePromptWithAgents,
 } = require("./promptCreator/sistema_multiagente/optimize-prompt");
 
-const { update_prompt } = require("./supabase/prompts_crud");
-
-const { save_prompt } = require("./supabase/prompts_crud");
+const {
+  update_prompt,
+  get_prompts,
+  save_prompt,
+} = require("./supabase/prompts_crud");
 
 //const { authMiddleware } = require("./auth/auth_middleware");
 
@@ -254,6 +256,21 @@ app.post("/post-management/update-prompt", async (req, res) => {
     return res.json({ data });
   } catch (error) {
     console.error("Update prompt endpoint error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+app.post("/post-management/get-prompts", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const data = await get_prompts(userId);
+
+    return res.json({ data });
+  } catch (error) {
+    console.error("Get prompts endpoint error:", error);
     res.status(500).json({
       error: "Internal server error",
     });
