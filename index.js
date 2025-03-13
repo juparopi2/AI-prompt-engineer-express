@@ -268,11 +268,12 @@ app.post("/post-management/get-prompts", async (req, res) => {
 
     const data = await get_prompts(userId);
 
-    return res.json({ data });
+    return res.json({ ...data, success: true });
   } catch (error) {
     console.error("Get prompts endpoint error:", error);
     res.status(500).json({
       error: "Internal server error",
+      success: false,
     });
   }
 });

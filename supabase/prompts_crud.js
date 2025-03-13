@@ -94,14 +94,14 @@ const get_prompts = async (user_id) => {
 
     if (promptFoldersError) throw promptFoldersError;
 
-    // Función auxiliar para obtener todos los IDs de carpetas padre
-
     // 3. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
     const initialFolderIds = [
       ...new Set(promptFolders.map((pf) => pf.folder_id)),
     ];
+    // Aquí está el cambio - pasar los parámetros en el orden correcto
     const allNeededFolderIds = await getAllParentFolderIds(
       initialFolderIds,
+      new Set(), // Pasar el Set vacío como segundo parámetro
       user_id
     );
 
