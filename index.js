@@ -111,7 +111,7 @@ app.post("/prompt-creator/process-questions", async (req, res) => {
     const response = await generatePromptFromAnswers(answers, prompt);
 
     const title = await generateTitle(response);
-    const data = await save_prompt(response, userId, title, "Creator");
+    const data = await save_prompt(response, userId, title, "prompt");
     const id = data[0].id;
 
     return res.json({
@@ -211,7 +211,7 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
       optimizedPromptStructure.processedPrompt,
       userId,
       title,
-      "Generator"
+      "agent"
     );
     const id = data[0].id;
 

@@ -80,8 +80,10 @@ const generateTitle = async (prompt) => {
             #### **Estructura de la salida**
             - La salida debe ser el título final. 
             - No se debe incluir ningún comentario o explicación adicional. 
-            - No debe tener formato MarkDown.
+            - NO DEBE TENER FORMATO MARKDOWN.
             - Debe ser una oración de menos de 10 palabras.
+            - NO AGREGUES NINGUN FORMATO EXTRA.
+            - ÚNICAMENTE DEBE SER EL TÍTULO.
             `,
       },
       {
