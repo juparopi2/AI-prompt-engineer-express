@@ -94,58 +94,73 @@ const get_prompts = async (user_id) => {
 
     if (promptFoldersError) throw promptFoldersError;
 
-    // 3. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
+    // 3. Identificar prompts sin carpetas
+    const promptsWithFolders = new Set(promptFolders.map((pf) => pf.prompt_id));
+    const promptsWithoutFolders = prompts.filter(
+      (p) => !promptsWithFolders.has(p.id)
+    );
+
+    // 4. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
     const initialFolderIds = [
       ...new Set(promptFolders.map((pf) => pf.folder_id)),
     ];
-    // Aquí está el cambio - pasar los parámetros en el orden correcto
+
     const allNeededFolderIds = await getAllParentFolderIds(
       initialFolderIds,
-      new Set(), // Pasar el Set vacío como segundo parámetro
+      new Set(),
       user_id
     );
 
-    // 4. Obtener los detalles completos de todas las carpetas necesarias
-    const { data: folders, error: foldersError } = await supabase
-      .from("folder")
-      .select(
-        "id, created_at, user_id, name, type, pinned, parent_folder_id, color"
-      )
-      .eq("user_id", user_id)
-      .in("id", allNeededFolderIds);
+    // 5. Obtener los detalles completos de todas las carpetas necesarias
+    let folders = [];
+    let folderMap = {};
+    let rootFolders = [];
+    let finalFolderStructure = [];
 
-    if (foldersError) throw foldersError;
+    if (allNeededFolderIds && allNeededFolderIds.length > 0) {
+      const { data: foldersData, error: foldersError } = await supabase
+        .from("folder")
+        .select(
+          "id, created_at, user_id, name, type, pinned, parent_folder_id, color"
+        )
+        .eq("user_id", user_id)
+        .in("id", allNeededFolderIds);
 
-    // 5. Crear mapa de carpetas para acceso rápido
-    const folderMap = folders.reduce((acc, folder) => {
-      acc[folder.id] = folder;
-      return acc;
-    }, {});
+      if (foldersError) throw foldersError;
 
-    // 6. Construir la estructura jerárquica comenzando desde las carpetas raíz
-    const rootFolders = folders
-      .filter((f) => !f.parent_folder_id)
-      .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
-      .filter(Boolean);
+      if (foldersData && foldersData.length > 0) {
+        folders = foldersData;
 
-    // 7. Crear mapa de relaciones prompt-folder
-    const promptFolderMap = promptFolders.reduce((acc, pf) => {
-      if (!acc[pf.prompt_id]) {
-        acc[pf.prompt_id] = [];
+        // 6. Crear mapa de carpetas para acceso rápido
+        folderMap = folders.reduce((acc, folder) => {
+          acc[folder.id] = folder;
+          return acc;
+        }, {});
+
+        // 7. Construir la estructura jerárquica comenzando desde las carpetas raíz
+        rootFolders = folders
+          .filter((f) => !f.parent_folder_id)
+          .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
+          .filter(Boolean);
+
+        // 8. Crear mapa de relaciones prompt-folder
+        const promptFolderMap = promptFolders.reduce((acc, pf) => {
+          if (!acc[pf.prompt_id]) {
+            acc[pf.prompt_id] = [];
+          }
+          acc[pf.prompt_id].push(pf.folder_id);
+          return acc;
+        }, {});
+
+        // 9. Asignar prompts a toda la estructura de carpetas
+        finalFolderStructure = rootFolders.map((folder) =>
+          assignPromptsToFolders(folder, prompts, promptFolderMap)
+        );
       }
-      acc[pf.prompt_id].push(pf.folder_id);
-      return acc;
-    }, {});
-
-    // 8. Función recursiva para asignar prompts a las carpetas
-
-    // 9. Asignar prompts a toda la estructura de carpetas
-    const finalFolderStructure = rootFolders.map((folder) =>
-      assignPromptsToFolders(folder, prompts, promptFolderMap)
-    );
+    }
 
     return {
-      prompts,
+      prompts: promptsWithoutFolders,
       folders: finalFolderStructure,
       promptFolders,
     };
