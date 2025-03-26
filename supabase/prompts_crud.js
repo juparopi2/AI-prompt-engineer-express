@@ -106,9 +106,18 @@ const get_prompts = async (user_id) => {
 
     // 4. Identificar prompts sin carpetas
     const promptsWithFolders = new Set(promptFolders.map((pf) => pf.prompt_id));
-    const promptsWithoutFolders = prompts.filter(
-      (p) => !promptsWithFolders.has(p.id)
-    );
+    const promptsWithoutFolders = prompts
+      .filter((p) => !promptsWithFolders.has(p.id))
+      .sort((a, b) => {
+        // Primero ordenar por pinned (true primero)
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+
+        // Luego ordenar por updated_at o created_at
+        const dateA = a.updated_at || a.created_at;
+        const dateB = b.updated_at || b.created_at;
+        return new Date(dateB) - new Date(dateA); // Orden descendente
+      });
 
     // 5. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
     const initialFolderIds = [
@@ -162,10 +171,28 @@ const get_prompts = async (user_id) => {
           return acc;
         }, {});
 
-        // 10. Asignar prompts a toda la estructura de carpetas
-        finalFolderStructure = rootFolders.map((folder) =>
-          assignPromptsToFolders(folder, prompts, promptFolderMap)
-        );
+        // 10. Asignar prompts a toda la estructura de carpetas y ordenarlos por pinned y updated_at
+        finalFolderStructure = rootFolders.map((folder) => {
+          const folderWithPrompts = assignPromptsToFolders(
+            folder,
+            prompts,
+            promptFolderMap
+          );
+
+          // Ordenar los prompts en cada carpeta
+          folderWithPrompts.prompts.sort((a, b) => {
+            // Primero ordenar por pinned (true primero)
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+
+            // Luego ordenar por updated_at o created_at
+            const dateA = a.updated_at || a.created_at;
+            const dateB = b.updated_at || b.created_at;
+            return new Date(dateB) - new Date(dateA); // Orden descendente
+          });
+
+          return folderWithPrompts;
+        });
       }
     }
 
