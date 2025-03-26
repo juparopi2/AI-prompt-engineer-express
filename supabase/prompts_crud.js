@@ -86,7 +86,17 @@ const get_prompts = async (user_id) => {
 
     if (promptsError) throw promptsError;
 
-    // 2. Obtener las relaciones prompt-folder
+    // 2. Filtrar y ordenar los prompts favoritos por updated_at (del más reciente al más antiguo)
+    const favoritePrompts = prompts
+      .filter((prompt) => prompt.favorite === true)
+      .sort((a, b) => {
+        // Si updated_at no existe, usar created_at
+        const dateA = a.updated_at || a.created_at;
+        const dateB = b.updated_at || b.created_at;
+        return new Date(dateB) - new Date(dateA); // Orden descendente
+      });
+
+    // 3. Obtener las relaciones prompt-folder
     const { data: promptFolders, error: promptFoldersError } = await supabase
       .from("promptFolder")
       .select("created_at, prompt_id, folder_id, user_id")
@@ -94,13 +104,13 @@ const get_prompts = async (user_id) => {
 
     if (promptFoldersError) throw promptFoldersError;
 
-    // 3. Identificar prompts sin carpetas
+    // 4. Identificar prompts sin carpetas
     const promptsWithFolders = new Set(promptFolders.map((pf) => pf.prompt_id));
     const promptsWithoutFolders = prompts.filter(
       (p) => !promptsWithFolders.has(p.id)
     );
 
-    // 4. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
+    // 5. Obtener todas las carpetas necesarias, incluyendo la jerarquía completa
     const initialFolderIds = [
       ...new Set(promptFolders.map((pf) => pf.folder_id)),
     ];
@@ -111,7 +121,7 @@ const get_prompts = async (user_id) => {
       user_id
     );
 
-    // 5. Obtener los detalles completos de todas las carpetas necesarias
+    // 6. Obtener los detalles completos de todas las carpetas necesarias
     let folders = [];
     let folderMap = {};
     let rootFolders = [];
@@ -131,19 +141,19 @@ const get_prompts = async (user_id) => {
       if (foldersData && foldersData.length > 0) {
         folders = foldersData;
 
-        // 6. Crear mapa de carpetas para acceso rápido
+        // 7. Crear mapa de carpetas para acceso rápido
         folderMap = folders.reduce((acc, folder) => {
           acc[folder.id] = folder;
           return acc;
         }, {});
 
-        // 7. Construir la estructura jerárquica comenzando desde las carpetas raíz
+        // 8. Construir la estructura jerárquica comenzando desde las carpetas raíz
         rootFolders = folders
           .filter((f) => !f.parent_folder_id)
           .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
           .filter(Boolean);
 
-        // 8. Crear mapa de relaciones prompt-folder
+        // 9. Crear mapa de relaciones prompt-folder
         const promptFolderMap = promptFolders.reduce((acc, pf) => {
           if (!acc[pf.prompt_id]) {
             acc[pf.prompt_id] = [];
@@ -152,7 +162,7 @@ const get_prompts = async (user_id) => {
           return acc;
         }, {});
 
-        // 9. Asignar prompts a toda la estructura de carpetas
+        // 10. Asignar prompts a toda la estructura de carpetas
         finalFolderStructure = rootFolders.map((folder) =>
           assignPromptsToFolders(folder, prompts, promptFolderMap)
         );
@@ -163,6 +173,7 @@ const get_prompts = async (user_id) => {
       prompts: promptsWithoutFolders,
       folders: finalFolderStructure,
       promptFolders,
+      favorite_prompts: favoritePrompts,
     };
   } catch (error) {
     console.error(
@@ -173,7 +184,7 @@ const get_prompts = async (user_id) => {
   }
 };
 
-// Get a single prompt by id
+// Get a single prompt by type
 const get_prompt_by_type = async (user_id, type = null) => {
   let query = supabase
     .from("prompt")
