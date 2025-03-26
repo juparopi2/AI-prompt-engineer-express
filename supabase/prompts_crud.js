@@ -86,11 +86,15 @@ const get_prompts = async (user_id) => {
 
     if (promptsError) throw promptsError;
 
-    // 2. Filtrar y ordenar los prompts favoritos por updated_at (del más reciente al más antiguo)
+    // 2. Filtrar y ordenar los prompts favoritos: primero por pinned, luego por updated_at
     const favoritePrompts = prompts
       .filter((prompt) => prompt.favorite === true)
       .sort((a, b) => {
-        // Si updated_at no existe, usar created_at
+        // Primero ordenar por pinned (true primero)
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+
+        // Luego ordenar por updated_at o created_at
         const dateA = a.updated_at || a.created_at;
         const dateB = b.updated_at || b.created_at;
         return new Date(dateB) - new Date(dateA); // Orden descendente
