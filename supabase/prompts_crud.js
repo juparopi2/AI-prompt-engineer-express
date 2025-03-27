@@ -290,19 +290,42 @@ const get_folder_tree_by_type = async (user_id, type = null) => {
     if (foldersError) throw foldersError;
     if (!folders || folders.length === 0) return { folders: [] };
 
-    // 2. Crear mapa de carpetas para acceso rápido
+    // 2. Obtener el conteo de prompts por carpeta
+    const { data: promptFolders, error: promptFoldersError } = await supabase
+      .from("promptFolder")
+      .select("folder_id, prompt_id")
+      .eq("user_id", user_id);
+
+    if (promptFoldersError) throw promptFoldersError;
+
+    // Crear mapa de conteo de prompts por carpeta
+    const promptCountMap = {};
+    if (promptFolders && promptFolders.length > 0) {
+      promptFolders.forEach((pf) => {
+        if (!promptCountMap[pf.folder_id]) {
+          promptCountMap[pf.folder_id] = 0;
+        }
+        promptCountMap[pf.folder_id]++;
+      });
+    }
+
+    // 3. Crear mapa de carpetas para acceso rápido
     const folderMap = folders.reduce((acc, folder) => {
-      acc[folder.id] = folder;
+      // Añadir conteo de prompts a la carpeta
+      acc[folder.id] = {
+        ...folder,
+        total_prompts: promptCountMap[folder.id] || 0,
+      };
       return acc;
     }, {});
 
-    // 3. Construir la estructura jerárquica comenzando desde las carpetas raíz
+    // 4. Construir la estructura jerárquica comenzando desde las carpetas raíz
     const rootFolders = folders
       .filter((f) => !f.parent_folder_id)
       .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
       .filter(Boolean);
 
-    // 4. Ordenar las carpetas por pinned y fecha
+    // 5. Ordenar las carpetas por pinned y fecha
     const sortedRootFolders = rootFolders.sort((a, b) => {
       // Primero ordenar por pinned (true primero)
       if (a.pinned && !b.pinned) return -1;
@@ -312,7 +335,7 @@ const get_folder_tree_by_type = async (user_id, type = null) => {
       return new Date(b.created_at) - new Date(a.created_at); // Orden descendente
     });
 
-    // 5. Ordenar recursivamente las subcarpetas
+    // 6. Ordenar recursivamente las subcarpetas
     const sortFolderStructure = (folder) => {
       if (folder.subfolders && folder.subfolders.length > 0) {
         folder.subfolders.sort((a, b) => {
