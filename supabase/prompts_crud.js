@@ -19,7 +19,6 @@ const buildFolderHierarchy = (folderId, folderMap, folders) => {
 
   return {
     ...folder,
-    prompts: [],
     subfolders: folders
       .filter((f) => f.parent_folder_id === folderId)
       .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
@@ -270,10 +269,84 @@ const delete_prompt = async (prompt_id) => {
   return true;
 };
 
+// Get folder tree by type
+const get_folder_tree_by_type = async (user_id, type = null) => {
+  try {
+    // 1. Obtener todas las carpetas del usuario según el tipo especificado
+    let query = supabase
+      .from("folder")
+      .select(
+        "id, created_at, user_id, name, type, pinned, parent_folder_id, color"
+      )
+      .eq("user_id", user_id);
+
+    // Agregar filtro por tipo si se especifica
+    if (type) {
+      query = query.eq("type", type);
+    }
+
+    const { data: folders, error: foldersError } = await query;
+
+    if (foldersError) throw foldersError;
+    if (!folders || folders.length === 0) return { folders: [] };
+
+    // 2. Crear mapa de carpetas para acceso rápido
+    const folderMap = folders.reduce((acc, folder) => {
+      acc[folder.id] = folder;
+      return acc;
+    }, {});
+
+    // 3. Construir la estructura jerárquica comenzando desde las carpetas raíz
+    const rootFolders = folders
+      .filter((f) => !f.parent_folder_id)
+      .map((f) => buildFolderHierarchy(f.id, folderMap, folders))
+      .filter(Boolean);
+
+    // 4. Ordenar las carpetas por pinned y fecha
+    const sortedRootFolders = rootFolders.sort((a, b) => {
+      // Primero ordenar por pinned (true primero)
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+
+      // Luego ordenar por created_at
+      return new Date(b.created_at) - new Date(a.created_at); // Orden descendente
+    });
+
+    // 5. Ordenar recursivamente las subcarpetas
+    const sortFolderStructure = (folder) => {
+      if (folder.subfolders && folder.subfolders.length > 0) {
+        folder.subfolders.sort((a, b) => {
+          // Primero ordenar por pinned (true primero)
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+
+          // Luego ordenar por created_at
+          return new Date(b.created_at) - new Date(a.created_at); // Orden descendente
+        });
+
+        // Ordenar recursivamente las subcarpetas
+        folder.subfolders = folder.subfolders.map(sortFolderStructure);
+      }
+      return folder;
+    };
+
+    // Aplicar ordenamiento a toda la estructura
+    const finalFolderStructure = sortedRootFolders.map(sortFolderStructure);
+
+    return {
+      folders: finalFolderStructure,
+    };
+  } catch (error) {
+    console.error("Error al obtener el árbol de carpetas:", error);
+    return null;
+  }
+};
+
 module.exports = {
   save_prompt,
   get_prompts,
   get_prompt_by_type,
   update_prompt,
   delete_prompt,
+  get_folder_tree_by_type,
 };

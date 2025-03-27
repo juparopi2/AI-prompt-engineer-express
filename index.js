@@ -18,7 +18,7 @@ const {
   update_prompt,
   get_prompts,
   save_prompt,
-  get_folders_by_type,
+  get_folder_tree_by_type,
 } = require("./supabase/prompts_crud");
 
 //const { authMiddleware } = require("./auth/auth_middleware");
@@ -282,7 +282,10 @@ app.post("/prompt-management/get-prompts", async (req, res) => {
   }
 });
 
-app.post("/folder-management/get-folders", async (req, res) => {
+/**
+ * Endpoint para obtener el árbol de carpetas por tipo y usuario
+ */
+app.post("/folder-management/get-folder-tree", async (req, res) => {
   try {
     const { userId, folderType } = req.body;
 
@@ -293,14 +296,21 @@ app.post("/folder-management/get-folders", async (req, res) => {
       });
     }
 
-    const data = await get_folders_by_type(userId, folderType || null);
+    const data = await get_folder_tree_by_type(userId, folderType || null);
+
+    if (!data) {
+      return res.status(500).json({
+        error: "Error al obtener árbol de carpetas",
+        success: false,
+      });
+    }
 
     return res.json({
       success: true,
-      folders: data,
+      folderTree: data.folders,
     });
   } catch (error) {
-    console.error("Get folders endpoint error:", error);
+    console.error("Get folder tree endpoint error:", error);
     res.status(500).json({
       error: "Internal server error",
       success: false,
