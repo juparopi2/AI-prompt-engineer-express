@@ -18,6 +18,7 @@ const {
   update_prompt,
   get_prompts,
   save_prompt,
+  get_folders_by_type,
 } = require("./supabase/prompts_crud");
 
 //const { authMiddleware } = require("./auth/auth_middleware");
@@ -235,7 +236,7 @@ app.post("/prompt-generator/process-questions", async (req, res) => {
  * -------------------------------------------------
  */
 
-app.post("/post-management/update-prompt", async (req, res) => {
+app.post("/prompt-management/update-prompt", async (req, res) => {
   try {
     const { promptId, updates } = req.body;
 
@@ -262,7 +263,7 @@ app.post("/post-management/update-prompt", async (req, res) => {
   }
 });
 
-app.post("/post-management/get-prompts", async (req, res) => {
+app.post("/prompt-management/get-prompts", async (req, res) => {
   try {
     const { userId } = req.body;
 
@@ -274,6 +275,32 @@ app.post("/post-management/get-prompts", async (req, res) => {
     });
   } catch (error) {
     console.error("Get prompts endpoint error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      success: false,
+    });
+  }
+});
+
+app.post("/folder-management/get-folders", async (req, res) => {
+  try {
+    const { userId, folderType } = req.body;
+
+    if (!userId || typeof userId !== "string") {
+      return res.status(400).json({
+        error: "User ID is required and must be a string",
+        success: false,
+      });
+    }
+
+    const data = await get_folders_by_type(userId, folderType || null);
+
+    return res.json({
+      success: true,
+      folders: data,
+    });
+  } catch (error) {
+    console.error("Get folders endpoint error:", error);
     res.status(500).json({
       error: "Internal server error",
       success: false,
